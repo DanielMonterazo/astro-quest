@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>APIs da NASA no Mapa dos Abandonados</title>
+<style>
+@page{size:A4;margin:16mm 15mm}
+body{font:10.5pt/1.5 -apple-system,"Helvetica Neue",Arial,sans-serif;color:#1d2330;margin:0}
+h1{font-size:22pt;margin:0 0 4px;color:#8a3b1c}
+.sub{color:#5a6475;margin:0 0 14px}
+h2{font-size:13.5pt;color:#8a3b1c;margin:18px 0 6px;border-bottom:2px solid #f0d9c8;padding-bottom:3px;break-after:avoid}
+h3{font-size:11pt;margin:10px 0 4px}
+p{margin:4px 0 7px}
+table{break-inside:avoid;border-collapse:collapse;width:100%;margin:6px 0 10px;font-size:9.5pt}
+th,td{border:1px solid #d9dee6;padding:5px 7px;text-align:left;vertical-align:top}
+th{background:#f6efe8}
+code{font:9pt Menlo,monospace;background:#f2f4f7;padding:1px 4px;border-radius:3px}
+.card{border:1px solid #e3e6eb;border-left:5px solid #c0582d;border-radius:6px;padding:8px 12px;margin:10px 0;break-inside:avoid}
+.card .tag{display:inline-block;font-size:8pt;font-weight:700;color:#fff;background:#c0582d;border-radius:3px;padding:1px 6px;margin-right:6px}
+.flux{display:flex;gap:6px;align-items:center;font-size:9pt;margin:8px 0;flex-wrap:wrap}
+.flux div{border:1px solid #c9d2de;border-radius:6px;padding:6px 8px;background:#f7f9fc;text-align:center}
+.flux span{color:#c0582d;font-weight:700}
+.nota{background:#fff8e6;border:1px solid #f1dca4;border-radius:6px;padding:7px 10px;font-size:9.5pt}
+ul{margin:4px 0 8px;padding-left:18px}li{margin:2px 0}
+</style></head><body>
+<h1>Como o jogo usa as APIs da NASA</h1>
+<p class="sub"><b>Mapa dos Abandonados · MARS-01, O Enigma de Gale</b> · NASA Space Apps Challenge 2026 · documento técnico e pedagógico</p>
+
+<p>O jogo é uma simulação de base em Marte para crianças. A base, o astronauta e o robô <b>R-1</b> são fictícios. Os <b>dados, imagens e estudos vêm da NASA</b>: cada decisão importante do jogador se apoia num dado real, e o jogo sempre indica a fonte e o que é simulação. O rover R-1 é um personagem do jogo; as fotos e medições reais são do rover <b>Curiosity</b>, na cratera Gale.</p>
+
+<h2>1. Arquitetura: como os dados chegam ao jogo</h2>
+<div class="flux"><div>Navegador<br><small>index.html</small></div><span>→</span><div>Funções da Vercel<br><code>/api/*.js</code></div><span>→</span><div>APIs da NASA<br><small>DONKI · OSDR · RadLab · Raw Images</small></div><span>→</span><div>Cache da Vercel<br><small>1 h a 1 dia</small></div></div>
+<ul>
+<li><b>Proxy no servidor.</b> O navegador nunca chama a NASA com chave. Ele pede a <code>/api/donki</code>, <code>/api/fotos</code>, <code>/api/osdr</code> e <code>/api/radlab</code>; essas funções serverless (Vercel) consultam a NASA, resumem a resposta e devolvem só o que o jogo precisa.</li>
+<li><b>Chave protegida.</b> A <code>NASA_API_KEY</code> fica numa variável de ambiente da Vercel; sem ela, usa a <code>DEMO_KEY</code> pública. Ela nunca aparece no código do jogo.</li>
+<li><b>Cache.</b> Cada resposta fica guardada (<code>s-maxage</code>): 1 hora para clima espacial e fotos, 1 dia para OSDR e RadLab. Assim todos os jogadores juntos fazem poucas chamadas por dia.</li>
+<li><b>Funciona sem internet.</b> Se a API falhar, o jogo usa dados reais guardados no código (copiados das mesmas APIs) e avisa a criança que são “dados guardados”, não “ao vivo”.</li>
+<li><b>CORS.</b> O RadLab não aceita chamadas diretas do navegador; por isso ele passa obrigatoriamente pelo proxy.</li>
+</ul>
+
+<h2>2. As APIs, uma a uma</h2>
+
+<div class="card"><span class="tag">AO VIVO</span><b>NASA DONKI: clima espacial</b> · <code>api.nasa.gov/DONKI/notifications</code> → <code>/api/donki</code>
+<p><b>O que busca:</b> notificações dos últimos 30 dias (ejeções de massa coronal, CME; explosões solares, FLR; partículas energéticas, SEP; tempestades geomagnéticas, GST, entre outras). O proxy extrai o resumo, a data e, quando houver, a <b>velocidade da CME em km/s</b> e a classe da explosão (X, M, C).</p>
+<p><b>Onde aparece no jogo:</b></p>
+<ul>
+<li><b>Alerta solar:</b> a torre de comunicação recebe uma CME real. A criança calcula em quantos sóis ela chega a Marte usando a velocidade verdadeira, e escolhe onde se abrigar.</li>
+<li><b>Tempestades de radiação na base:</b> o dia da chegada é marcado na tela (“☁ chega em N sóis”) e o dosímetro sobe se o astronauta ficar fora do abrigo.</li>
+<li><b>Painel “NASA ao vivo”:</b> lista os eventos solares recentes, com data e link para a página oficial do DONKI.</li>
+<li><b>Missão “abrigo”:</b> na tempestade, ensina que paredes protegem da radiação.</li>
+</ul></div>
+
+<div class="card"><span class="tag">AO VIVO</span><b>Imagens brutas do Curiosity</b> · <code>mars.nasa.gov/api/v1/raw_image_items</code> → <code>/api/fotos</code>
+<p><b>O que busca:</b> as fotos mais recentes do Curiosity nas câmeras Mastcam, Navcam e Hazcam, com sol, data e link da imagem.</p>
+<p><b>Onde aparece:</b> a “📻 Foto de hoje” que chega pelo rádio da base; o painel NASA ao vivo; e a <b>galeria da tela final</b>, junto das imagens de cada etapa. Se a função falhar, o jogo tenta a API pública direto do navegador.</p></div>
+
+<div class="card"><span class="tag">AO VIVO</span><b>NASA OSDR: estudos de biologia espacial</b> · <code>osdr.nasa.gov/osdr/data/search</code> → <code>/api/osdr</code>
+<p><b>O que busca:</b> título, organismo, missão e programa de voo de estudos reais: <b>OSD-342</b> (músculos), <b>OSD-133</b> (ossos de peixes medaka), <b>OSD-611</b> (radiação e memória), <b>OSD-766</b> (tomates na ISS), <b>OSD-678</b> (plantas na luz) e <b>OSD-69</b>.</p>
+<p><b>Onde aparece:</b></p>
+<ul>
+<li><b>Laboratório:</b> a criança prevê o resultado de um experimento e depois vê o que os cientistas encontraram, com o título oficial do estudo.</li>
+<li><b>Regras novas na base:</b> cada estudo concluído vira uma regra de jogo. Por exemplo, o OSD-342 faz o exercício proteger mais a Saúde, e o OSD-766 faz a horta render uma refeição a mais. Assim a ciência muda a estratégia.</li>
+<li><b>Livrinho dos recursos:</b> cada barra (Energia, Vida, Saúde) cita um estudo do OSDR.</li>
+</ul></div>
+
+<div class="card"><span class="tag">HISTÓRICO</span><b>NASA OSDR RadLab: radiação medida em Marte</b> · <code>visualization.osdr.nasa.gov/radlab/api</code> → <code>/api/radlab</code>
+<p><b>O que busca:</b> a dose de radiação absorvida medida pelo instrumento <b>RAD do Curiosity</b> na superfície, de 5 a 18 de setembro de 2017. É uma tempestade solar real, e o proxy entrega a média por dia (µGy/h).</p>
+<p><b>Onde aparece:</b> no <b>Dosímetro</b>. A criança vê o gráfico real, responde se algum dia passou da linha de alerta e só então vê o pico de 11/09/2017 (cerca de 18 µGy/h, mais que o dobro do normal). Também aparece no guia de radiação.</p></div>
+
+<div class="card"><span class="tag">ESTÁTICO</span><b>NASA Image and Video Library e Photojournal</b> · <code>images.nasa.gov</code> · imagens <code>PIA</code>
+<p>As imagens das 6 etapas da cratera Gale (local de pouso, roda danificada, furos da broca, autorretrato no Monte Sharp, Vera Rubin Ridge), as 4 rochas do quiz de geologia (Jake Matijevic, John Klein, Hottah, Garden City) e as imagens do livrinho são fotos oficiais. Cada uma aparece com legenda e crédito (ex.: <i>NASA/JPL-Caltech/MSSS · PIA19807</i>). Elas ficam salvas no projeto em <code>img/gale/</code> para carregar rápido e funcionar offline.</p></div>
+
+<h2 style="break-before:page">3. Resumo: dado real → mecânica → aprendizagem</h2>
+<table>
+<tr><th>Fonte NASA</th><th>Mecânica do jogo</th><th>O que a criança aprende</th></tr>
+<tr><td>DONKI (CME, velocidade)</td><td>Calcular a chegada da tempestade; abrigar-se a tempo</td><td>Velocidade, distância e tempo; o Sol afeta Marte</td></tr>
+<tr><td>RadLab / RAD</td><td>Dosímetro e gráfico de setembro de 2017</td><td>Ler gráficos, limites seguros, proteção contra radiação</td></tr>
+<tr><td>OSDR</td><td>Laboratório; estudos viram regras da base</td><td>Como funciona um experimento; corpo e plantas no espaço</td></tr>
+<tr><td>Raw Images</td><td>Foto do dia; galeria final</td><td>O Curiosity está trabalhando agora</td></tr>
+<tr><td>Imagens PIA</td><td>Etapas de Gale; quiz de rochas</td><td>Ler evidências: lago, rio, vulcão e água subterrânea</td></tr>
+</table>
+
+<h2>4. Cuidados de honestidade científica</h2>
+<ul>
+<li>Toda tela com dado real mostra a <b>fonte</b>, e as telas de simulação têm a etiqueta “simulação”. No relatório final, a criança classifica afirmações como <b>fato</b>, <b>hipótese</b> ou <b>simulação</b>.</li>
+<li>Quando a API não responde, o jogo diz “dados guardados”, e os números guardados vieram das mesmas APIs.</li>
+<li>O R-1 e a base são fictícios. As medições e as fotos são do Curiosity real.</li>
+</ul>
+<p class="nota"><b>Arquivos:</b> <code>api/donki.js</code>, <code>api/fotos.js</code>, <code>api/osdr.js</code>, <code>api/radlab.js</code> (proxies); em <code>index.html</code>, as funções <code>nasaCarregaG</code>, <code>labCarregaG</code>, <code>radlabCarregaG</code>, <code>cmeAlertaG</code> e <code>eventoSolarG</code>; e a galeria final em <code>final.js</code>.</p>
+</body></html>

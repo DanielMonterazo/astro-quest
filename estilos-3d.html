@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estilos 3D (teste)</title>
+<!-- Cena de TESTE, fora do jogo: compara 6 estilos visuais com o mesmo conteúdo. Não é publicada. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--fundo:#0b0f17;--txt:#e9eef6;--fraco:#9aa6b8;--borda:#2a3446;--acento:#ff8a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--txt);font:15px/1.45 system-ui,sans-serif;padding:16px}
+h1{font-size:20px;margin:0 0 4px}.sub{color:var(--fraco);margin:0 0 12px}
+.barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.barra button,.barra select{background:#141b28;color:var(--txt);border:1px solid var(--borda);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+.barra button[aria-pressed=true]{background:var(--acento);color:#1a0d02;border-color:var(--acento);font-weight:700}
+#palco{position:relative;width:min(100%,960px);aspect-ratio:16/9;border:1px solid var(--borda);border-radius:12px;overflow:hidden;background:#000;touch-action:none}
+#palco canvas{width:100%;height:100%;display:block}
+#palco.pixel canvas{image-rendering:pixelated}
+#info{position:absolute;left:10px;top:8px;font:12px ui-monospace,monospace;color:#cfd8e6;background:rgba(0,0,0,.45);padding:3px 7px;border-radius:6px;pointer-events:none}
+/* marcador da Opportunity (HTML que acompanha o ponto na superfície) */
+#marcador{position:absolute;transform:translate(-50%,-100%);border:0;cursor:pointer;font:700 13px system-ui;color:#fff;background:#2563eb;padding:5px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.4);white-space:nowrap}
+#marcador::after{content:"";position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:#2563eb}
+#marcador[hidden]{display:none}
+/* painel de missão: mesmo conteúdo em todos os estilos */
+#painel{position:absolute;right:12px;top:12px;width:min(300px,44%);padding:14px 16px;border-radius:12px;background:rgba(12,16,24,.92);border:1px solid #3a4a64;color:#e9eef6;font-size:13.5px}
+#painel h2{margin:0 0 4px;font-size:18px}#painel p{margin:6px 0}#painel .ey{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8ff0ff;margin:0}
+#painel button{margin-top:6px;background:transparent;color:inherit;border:1px solid currentColor;border-radius:6px;padding:4px 10px;cursor:pointer;font:inherit}
+#painel[hidden]{display:none}
+#resultado{margin-top:14px;max-width:960px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{border:1px solid var(--borda);padding:6px 8px;text-align:left}th{background:#141b28}td.n{text-align:right;font-variant-numeric:tabular-nums}
+/* --- variações do marcador e do painel por estilo --- */
+.e-cartoon #marcador{background:#ff6b3d;border:3px solid #1b1220;border-radius:14px;font-size:14px}.e-cartoon #marcador::after{border-top-color:#1b1220}
+.e-cartoon #painel{background:#fff7e8;color:#1b1220;border:4px solid #1b1220;border-radius:18px;box-shadow:6px 6px 0 #1b1220}.e-cartoon #painel .ey{color:#e8771f}
+.e-pixel1 #marcador,.e-pixel2 #marcador{background:#c2410c;border-radius:0;font:700 12px ui-monospace,monospace;box-shadow:3px 3px 0 #000;image-rendering:pixelated}.e-pixel1 #marcador::after,.e-pixel2 #marcador::after{border-top-color:#c2410c}
+.e-pixel1 #painel,.e-pixel2 #painel{background:#1d1a2e;border:4px solid #e9d8a6;border-radius:0;font:13px/1.5 ui-monospace,monospace;box-shadow:4px 4px 0 #000}.e-pixel1 #painel .ey,.e-pixel2 #painel .ey{color:#f4a259}
+.e-mao #marcador{background:#fff3c4;color:#3b2b1a;border:2px solid #3b2b1a;border-radius:6px;transform:translate(-50%,-100%) rotate(-4deg);font:700 15px "Comic Sans MS","Chalkboard SE",cursive;box-shadow:2px 3px 0 rgba(0,0,0,.35)}.e-mao #marcador::after{border-top-color:#3b2b1a}
+.e-mao #painel{background:#fbf6e9 repeating-linear-gradient(transparent 0 23px,#c9d6e8 23px 24px);color:#2b2118;border:0;border-left:22px solid #e9dcc0;border-radius:4px;font:15px/24px "Chalkboard SE","Comic Sans MS",cursive;box-shadow:3px 4px 0 rgba(0,0,0,.35);transform:rotate(1deg)}.e-mao #painel .ey{color:#b4533a}
+.e-real #painel{background:rgba(10,12,16,.72);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.18)}
+.e-voxel #marcador{background:#5d8a3a;border:3px solid #2f4a1c;border-radius:0;font:700 13px ui-monospace,monospace;box-shadow:inset -3px -3px 0 #2f4a1c,inset 3px 3px 0 #86b85a}.e-voxel #marcador::after{border-top-color:#2f4a1c}
+.e-voxel #painel{background:#6b4a2e;color:#fff;border:0;border-radius:0;box-shadow:inset -5px -5px 0 #4a3220,inset 5px 5px 0 #8a6440;font:13px/1.5 ui-monospace,monospace}.e-voxel #painel .ey{color:#ffe08a}
+</style>
+</head>
+<body>
+<h1>Estilos 3D — cena de teste</h1>
+<p class="sub">Arraste para girar, use a rodinha ou a pinça para zoom e toque no marcador da Opportunity. Fora do jogo e sem publicar.</p>
+<div class="barra" id="seletor" role="group" aria-label="Estilo visual"></div>
+<div class="barra">
+  <label>Resolução interna <select id="res">
+    <option value="proposta">proposta do estilo</option><option value="960x540">960×540 (igual para todos)</option></select></label>
+  <button id="medir" type="button">Medir desempenho (6 estilos + pixel na resolução proposta)</button>
+</div>
+<div id="palco">
+  <canvas id="cv" aria-label="Marte e o astronauta"></canvas>
+  <div id="info"></div>
+  <button id="marcador" type="button">Opportunity</button>
+  <aside id="painel" hidden>
+    <p class="ey">Missão · NASA</p>
+    <h2>Opportunity</h2>
+    <p>Rover que pousou em Meridiani Planum em janeiro de 2004. Era para durar 90 sóis e trabalhou até 2018.</p>
+    <p>Rodou cerca de 45 km e achou sinais de água antiga nas rochas. Uma tempestade de poeira cobriu os painéis solares e ele parou.</p>
+    <button type="button" id="fecha">Fechar</button>
+  </aside>
+</div>
+<div id="resultado"></div>
+
+<!-- ===================== NÚCLEO COMUM ===================== -->
+<script id="nucleo">
+const ESTILOS={};const RES_IGUAL={w:960,h:540};
+const OPP={lat:-1.95,lon:-5.53};// Opportunity, Meridiani Planum
+let C=null;// contexto da cena
+
+/* reaproveita o código do jogo: lê o index.html e carrega o astronauta, mG, sombraG e ll tal como estão lá */
+async function carregaJogo(){
+  const src=await (await fetch("index.html")).text();
+  const linha=ini=>{const i=src.indexOf(ini);if(i<0)throw new Error("não achei "+ini);return src.slice(i,src.indexOf("\n",i))};
+  const bloco=(ini,fim)=>{const i=src.indexOf(ini),j=src.indexOf(fim,i);if(i<0||j<0)throw new Error("não achei "+ini);return src.slice(i,j)};
+  const g=(0,eval);
+  g("window.TAU2=Math.PI*2");
+  g(linha("const ll=").replace("const ll=","window.ll="));
+  g(linha("const mG=").replace("const mG=","window.mG="));
+  g(linha("const sombraG=").replace("const sombraG=","window.sombraG="));
+  g(bloco("function astronautaFofoG(){","\n/* poses do astronauta"));
+}
+const carregaImg=u=>new Promise((ok,erro)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=erro;i.src=u});
+
+async function inicia(){
+  await carregaJogo();
+  const cv=document.getElementById("cv"),rd=new THREE.WebGLRenderer({canvas:cv,antialias:false,preserveDrawingBuffer:false});
+  rd.setPixelRatio(1);rd.outputEncoding=THREE.sRGBEncoding;
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(38,16/9,.1,100);
+  const img=await carregaImg("tex/mars.jpg"),imgN=await carregaImg("tex/mars_n.jpg");
+  C={rd,sc,cam,img,imgN,raio:4.2,yaw:.3,pitch:.18,t:0,objs:[],estilo:null,proposta:{w:960,h:540},mars:null,astro:null};
+  controles(cv);
+  document.getElementById("marcador").onclick=()=>{document.getElementById("painel").hidden=false};
+  document.getElementById("fecha").onclick=()=>{document.getElementById("painel").hidden=true};
+  document.getElementById("res").onchange=aplicaRes;
+  const sel=document.getElementById("seletor");
+  Object.entries(ESTILOS).forEach(([k,e],i)=>{const b=document.createElement("button");b.type="button";b.dataset.k=k;b.textContent=(i+1)+". "+e.nome;b.onclick=()=>troca(k);sel.appendChild(b)});
+  troca(Object.keys(ESTILOS)[0]);
+  document.getElementById("medir").onclick=medeTudo;
+  let ult=performance.now();
+  (function loop(agora){const dt=Math.min(.05,(agora-ult)/1000);ult=agora;if(!C.medindo){C.t+=dt;quadro(C.t)}requestAnimationFrame(loop)})(ult);
+}
+
+/* troca de estilo: desmonta o anterior e monta o novo com o mesmo enquadramento */
+function troca(k){
+  C.objs.forEach(o=>{C.sc.remove(o);o.traverse&&o.traverse(m=>{if(m.geometry)m.geometry.dispose();if(m.material)[].concat(m.material).forEach(x=>{x.map&&x.map.dispose();x.dispose()})})});
+  C.objs=[];C.sc.background=null;C.sc.fog=null;C.rd.toneMapping=THREE.NoToneMapping;C.rd.toneMappingExposure=1;
+  const e=ESTILOS[k],r=e.monta(C);C.mars=r.mars;C.astro=r.astro;C.proposta=e.res||RES_IGUAL;C.estilo=k;
+  [r.mars,r.astro,...(r.extras||[])].forEach(o=>{C.sc.add(o);C.objs.push(o)});
+  // mesma posição para todos: Marte no centro, astronauta à frente e à direita
+  r.mars.position.set(0,0,0);r.astro.position.set(1.6,-.85,.9);
+  document.body.className="e-"+k;document.getElementById("palco").classList.toggle("pixel",!!e.pixel);
+  document.querySelectorAll("#seletor button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k));
+  aplicaRes();
+}
+function aplicaRes(){const v=document.getElementById("res").value,r=v==="proposta"?C.proposta:RES_IGUAL;setRes(r.w,r.h)}
+function setRes(w,h){C.rd.setSize(w,h,false);C.res={w,h};document.getElementById("info").textContent=`${ESTILOS[C.estilo].nome} · ${w}×${h}`}
+
+/* um quadro: Marte e astronauta giram, câmera orbita, marcador acompanha o ponto da Opportunity */
+const _v=new THREE.Vector3();
+function quadro(t,camFixa){
+  C.mars.rotation.y=t*.25;C.astro.rotation.y=Math.sin(t*.8)*.6+.4;
+  const yaw=camFixa!==undefined?camFixa:C.yaw;
+  C.cam.position.set(Math.sin(yaw)*Math.cos(C.pitch)*C.raio,Math.sin(C.pitch)*C.raio,Math.cos(yaw)*Math.cos(C.pitch)*C.raio);C.cam.lookAt(.35,-.1,0);
+  C.rd.render(C.sc,C.cam);
+  if(!C.medindo)poeMarcador();
+}
+function poeMarcador(){
+  const mk=document.getElementById("marcador"),p=ll(OPP.lat,OPP.lon,1.02);
+  _v.copy(p).applyMatrix4(C.mars.matrixWorld);
+  const normal=_v.clone().sub(C.mars.getWorldPosition(new THREE.Vector3())).normalize(),praCam=C.cam.position.clone().sub(_v).normalize();
+  const visivel=normal.dot(praCam)>.08;_v.project(C.cam);
+  mk.hidden=!visivel;if(!visivel)return;
+  const pal=document.getElementById("palco");mk.style.left=((_v.x*.5+.5)*pal.clientWidth)+"px";mk.style.top=((-_v.y*.5+.5)*pal.clientHeight)+"px";
+}
+function controles(cv){
+  let arr=null,dist0=null;const pts=new Map();
+  cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);arr=[e.clientX,e.clientY]});
+  cv.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pts.size===2){const[a,b]=[...pts.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(dist0)C.raio=Math.min(9,Math.max(2.4,C.raio*dist0/d));dist0=d;return}
+    if(!arr)return;C.yaw-=(e.clientX-arr[0])*.008;C.pitch=Math.max(-1.2,Math.min(1.2,C.pitch+(e.clientY-arr[1])*.006));arr=[e.clientX,e.clientY]});
+  const solta=e=>{pts.delete(e.pointerId);dist0=null;arr=null};cv.addEventListener("pointerup",solta);cv.addEventListener("pointercancel",solta);
+  cv.addEventListener("wheel",e=>{e.preventDefault();C.raio=Math.min(9,Math.max(2.4,C.raio*(1+Math.sign(e.deltaY)*.08)))},{passive:false});
+}
+
+/* utilidades para os estilos */
+const U={
+  // troca o material de cada parte do astronauta mantendo a cor original
+  recolore(o,fab){o.traverse(m=>{if(!m.isMesh)return;const old=m.material;if(old.transparent&&old.opacity<.5){m.visible=false;return}m.material=fab(old.color?old.color.clone():new THREE.Color(0xffffff),old)});return o},
+  canvas(w,h){const c=document.createElement("canvas");c.width=w;c.height=h;return[c,c.getContext("2d")]},
+  pixels(img,w,h){const[c,g]=U.canvas(w,h);g.drawImage(img,0,0,w,h);return[c,g,g.getImageData(0,0,w,h)]},
+  tex(c,nearest){const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;if(nearest){t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false}return t},
+  degraus(n){const d=new Uint8Array(n*4);for(let i=0;i<n;i++){const v=Math.round(255*(i+.5)/n);d.set([v,v,v,255],i*4)}const t=new THREE.DataTexture(d,n,1,THREE.RGBAFormat);t.magFilter=t.minFilter=THREE.NearestFilter;t.needsUpdate=true;return t},
+  // paleta curta: escolhe a cor mais próxima
+  quantiza(id,pal,dither){const d=id.data,W=id.width;const bay=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+    for(let i=0;i<d.length;i+=4){const px=(i/4)%W,py=Math.floor(i/4/W),off=dither?(bay[(py%4)*4+px%4]/16-.5)*28:0;let best=0,bd=1e9;
+      for(let k=0;k<pal.length;k++){const p=pal[k],dr=d[i]+off-p[0],dg=d[i+1]+off-p[1],db=d[i+2]+off-p[2],dd=dr*dr+dg*dg+db*db;if(dd<bd){bd=dd;best=k}}d.set(pal[best],i)}return id},
+  luzes(sol,amb,hemi){const g=new THREE.Group(),d=new THREE.DirectionalLight(0xffffff,sol);d.position.set(4,3,5);g.add(d);g.add(new THREE.AmbientLight(0xffffff,amb));if(hemi)g.add(new THREE.HemisphereLight(0xffe6cc,0x402018,hemi));return g},
+  hex:h=>[(h>>16)&255,(h>>8)&255,h&255],
+};
+</script>
+
+<!-- ===================== 1. CARTOON 3D ===================== -->
+<script id="estilo-cartoon">
+ESTILOS.cartoon={nome:"Cartoon 3D",res:{w:960,h:540},monta(C){
+  const grad=U.degraus(3);
+  // textura chapada: 3 tons de laranja e crateras simplificadas (círculos com borda)
+  const[c,g]=U.canvas(1024,512);g.fillStyle="#d9773f";g.fillRect(0,0,1024,512);
+  g.fillStyle="#c4612f";for(let i=0;i<14;i++){g.beginPath();g.ellipse(Math.random()*1024,120+Math.random()*280,60+Math.random()*120,22+Math.random()*40,0,0,7);g.fill()}
+  g.fillStyle="#f3efe6";g.fillRect(0,0,1024,26);g.fillRect(0,486,1024,26);
+  for(let i=0;i<40;i++){const x=Math.random()*1024,y=40+Math.random()*430,r=6+Math.random()*22;g.fillStyle="#b4532a";g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle="#e89462";g.beginPath();g.arc(x-r*.18,y-r*.18,r*.7,0,7);g.fill()}
+  const mars=new THREE.Mesh(new THREE.SphereGeometry(1,48,32),new THREE.MeshToonMaterial({map:U.tex(c),gradientMap:grad}));
+  // contorno: casca invertida preta
+  mars.add(new THREE.Mesh(new THREE.SphereGeometry(1.025,48,32),new THREE.MeshBasicMaterial({color:0x1b1220,side:THREE.BackSide})));
+  const astro=U.recolore(astronautaFofoG(),(cor)=>new THREE.MeshToonMaterial({color:cor,gradientMap:grad}));astro.scale.setScalar(.42);
+  C.sc.background=new THREE.Color(0x2b1f4a);
+  return{mars,astro,extras:[U.luzes(1.1,.45)]}}};
+</script>
+
+<!-- ===================== 2. PIXEL ART 3D SIMPLES ===================== -->
+<script id="estilo-pixel1">
+ESTILOS.pixel1={nome:"Pixel art simples",pixel:true,res:{w:240,h:135},monta(C){
+  const PAL=[0x3b1d14,0x7a2f1a,0xb4532a,0xe08a4a,0xf3d4a0,0xf4f1ea].map(U.hex);
+  const[c,g,id]=U.pixels(C.img,64,32);g.putImageData(U.quantiza(id,PAL,false),0,0);
+  const mars=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshLambertMaterial({map:U.tex(c,true),flatShading:true}));
+  const astro=U.recolore(astronautaFofoG(),(cor)=>{const q=PAL.concat([[27,18,32],[232,119,31],[233,168,119]]);const p=q.reduce((b,x)=>{const d=(x[0]-cor.r*255)**2+(x[1]-cor.g*255)**2+(x[2]-cor.b*255)**2;return d<b[0]?[d,x]:b},[1e9,q[0]])[1];return new THREE.MeshLambertMaterial({color:new THREE.Color(p[0]/255,p[1]/255,p[2]/255),flatShading:true})});
+  astro.scale.setScalar(.42);
+  C.sc.background=new THREE.Color(0x1d1a2e);
+  return{mars,astro,extras:[U.luzes(1.2,.35)]}}};
+</script>
+
+<!-- ===================== 3. PIXEL ART 3D DETALHADA ===================== -->
+<script id="estilo-pixel2">
+ESTILOS.pixel2={nome:"Pixel art detalhada",pixel:true,res:{w:480,h:270},monta(C){
+  // 16 cores tiradas de Marte + pontilhado ordenado (Bayer) para variação de textura
+  const PAL=[0x1e0f0c,0x3b1d14,0x5a2a1a,0x7a3a20,0x96482a,0xb05a32,0xc46a3a,0xd47d48,0xe09058,0xe8a46c,0xf0bb88,0xf5d2a8,0xf8e6cc,0xfdf6ea,0x8a6a5a,0x5a4a48].map(U.hex);
+  const[c,g,id]=U.pixels(C.img,256,128);g.putImageData(U.quantiza(id,PAL,true),0,0);
+  const mars=new THREE.Mesh(new THREE.SphereGeometry(1,40,28),new THREE.MeshLambertMaterial({map:U.tex(c,true)}));
+  const astro=U.recolore(astronautaFofoG(),(cor)=>new THREE.MeshLambertMaterial({color:cor}));astro.scale.setScalar(.42);
+  C.sc.background=new THREE.Color(0x140f1f);
+  // luz suave: hemisférica quente + sol baixo
+  return{mars,astro,extras:[U.luzes(.9,.15,.55)]}}};
+</script>
+
+<!-- ===================== 4. DESENHADO À MÃO EM 3D ===================== -->
+<script id="estilo-mao">
+ESTILOS.mao={nome:"Desenhado à mão",res:{w:960,h:540},monta(C){
+  // papel + aquarela de Marte + traços e hachuras pintados NA textura (por isso giram junto com o planeta)
+  const[c,g]=U.canvas(1024,512);const[,,id]=U.pixels(C.img,1024,512);
+  g.fillStyle="#f6ead2";g.fillRect(0,0,1024,512);g.globalAlpha=.55;g.drawImage(C.img,0,0,1024,512);g.globalAlpha=1;
+  const lum=(x,y)=>{const i=(Math.floor(y)*1024+Math.floor(x))*4;return(id.data[i]+id.data[i+1]+id.data[i+2])/765};
+  g.strokeStyle="rgba(60,35,20,.55)";g.lineWidth=1.3;
+  for(let n=0;n<5200;n++){const x=Math.random()*1024,y=Math.random()*512,l=lum(x,y);if(Math.random()<l*1.25)continue;const a=-.7+(l<.35?Math.PI/2:0),s=5+Math.random()*6;
+    g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*s,y+Math.sin(a)*s);g.stroke()}
+  g.strokeStyle="rgba(50,30,18,.8)";g.lineWidth=2;for(let i=0;i<30;i++){const x=Math.random()*1024,y=60+Math.random()*390,r=5+Math.random()*16;g.beginPath();g.ellipse(x,y,r,r*.8,Math.random(),.3,5.8);g.stroke()}
+  const grad=U.degraus(2);
+  const mars=new THREE.Mesh(new THREE.SphereGeometry(1,48,32),new THREE.MeshToonMaterial({map:U.tex(c),gradientMap:grad}));
+  mars.add(new THREE.Mesh(new THREE.SphereGeometry(1.018,48,32),new THREE.MeshBasicMaterial({color:0x2b2118,side:THREE.BackSide})));
+  // astronauta: papel com hachuras leves
+  const[hc,hg]=U.canvas(128,128);hg.fillStyle="#fff";hg.fillRect(0,0,128,128);hg.strokeStyle="rgba(40,30,20,.35)";for(let i=-128;i<128;i+=9){hg.beginPath();hg.moveTo(i,128);hg.lineTo(i+128,0);hg.stroke()}
+  const hat=U.tex(hc);hat.wrapS=hat.wrapT=THREE.RepeatWrapping;hat.repeat.set(3,3);
+  const astro=U.recolore(astronautaFofoG(),(cor)=>new THREE.MeshToonMaterial({color:cor,map:hat,gradientMap:grad}));astro.scale.setScalar(.42);
+  C.sc.background=new THREE.Color(0xefe3c8);
+  return{mars,astro,extras:[U.luzes(1,.55)]}}};
+</script>
+
+<!-- ===================== 5. REALISTA ===================== -->
+<script id="estilo-real">
+ESTILOS.real={nome:"Realista",res:{w:960,h:540},monta(C){
+  C.rd.toneMapping=THREE.ACESFilmicToneMapping;C.rd.toneMappingExposure=1.05;
+  const tx=new THREE.Texture(C.img);tx.encoding=THREE.sRGBEncoding;tx.anisotropy=8;tx.needsUpdate=true;
+  const tn=new THREE.Texture(C.imgN);tn.needsUpdate=true;
+  const mars=new THREE.Mesh(new THREE.SphereGeometry(1,96,64),new THREE.MeshStandardMaterial({map:tx,normalMap:tn,normalScale:new THREE.Vector2(1.2,1.2),roughness:.95,metalness:0}));
+  // atmosfera fina: halo aditivo
+  mars.add(new THREE.Mesh(new THREE.SphereGeometry(1.03,64,48),new THREE.MeshBasicMaterial({color:0xffa070,transparent:true,opacity:.12,side:THREE.BackSide,blending:THREE.AdditiveBlending,depthWrite:false})));
+  const astro=astronautaFofoG();// materiais físicos originais do jogo (tecido, viseira com verniz)
+  astro.traverse(m=>{if(m.isMesh&&m.material.isMeshStandardMaterial&&!m.material.transparent){m.material.roughness=.85}});astro.scale.setScalar(.42);
+  const luz=new THREE.Group(),sol=new THREE.DirectionalLight(0xfff1e0,2.6);sol.position.set(5,2,4);luz.add(sol);luz.add(new THREE.HemisphereLight(0x8aa0c8,0x3a1a10,.35));
+  C.sc.background=new THREE.Color(0x02030a);
+  // estrelas
+  const pos=new Float32Array(1500*3);for(let i=0;i<pos.length;i++)pos[i]=(Math.random()-.5)*80;const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+  return{mars,astro,extras:[luz,new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.06}))]}}};
+</script>
+
+<!-- ===================== 6. VOXEL ART ===================== -->
+<script id="estilo-voxel">
+ESTILOS.voxel={nome:"Voxel Art",res:{w:960,h:540},monta(C){
+  const box=new THREE.BoxGeometry(1,1,1),mat=c=>new THREE.MeshLambertMaterial({color:c});
+  // planeta de blocos: casca de cubos com a cor de Marte naquele ponto
+  const N=40,R=N/2,[,,id]=U.pixels(C.img,256,128),pos=[],cor=[];
+  for(let x=-R;x<R;x++)for(let y=-R;y<R;y++)for(let z=-R;z<R;z++){const cx=x+.5,cy=y+.5,cz=z+.5,d=Math.hypot(cx,cy,cz);if(d>R-.5||d<R-1.6)continue;
+    const lat=Math.asin(cy/d),lon=Math.atan2(-cz,cx),u=(lon/Math.PI+1)/2,v=.5-lat/Math.PI,i=(Math.floor(v*127)*256+Math.floor(u*255))*4;pos.push(cx/R,cy/R,cz/R);cor.push(id.data[i]/255,id.data[i+1]/255,id.data[i+2]/255)}
+  const n=pos.length/3,im=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial(),n),m4=new THREE.Matrix4(),col=new THREE.Color();
+  for(let i=0;i<n;i++){m4.makeScale(1/R*1.02,1/R*1.02,1/R*1.02);m4.setPosition(pos[i*3],pos[i*3+1],pos[i*3+2]);im.setMatrixAt(i,m4);col.setRGB(cor[i*3],cor[i*3+1],cor[i*3+2]);col.convertSRGBToLinear();im.setColorAt(i,col)}
+  const mars=new THREE.Group();mars.add(im);
+  // astronauta de blocos: botas, pernas, corpo, mochila, braços, capacete, visor, rosto, antena
+  const a=new THREE.Group(),b=(w,h,d,x,y,z,c)=>{const m=new THREE.Mesh(box,mat(c));m.scale.set(w,h,d);m.position.set(x,y,z);a.add(m);return m};
+  const S=0xf4f1ea,L=0xe8771f,P=0xe9a877;
+  [-1,1].forEach(s=>{b(.32,.18,.42,s*.2,.09,.04,0x3a2e2a);b(.26,.42,.28,s*.2,.38,0,S);b(.18,.5,.2,s*.5,1.02,0,S);b(.2,.2,.22,s*.5,.7,0,L)});
+  b(.72,.7,.46,0,.92,0,S);b(.56,.62,.26,0,.95,-.36,0xc9ccd1);b(.3,.18,.04,0,.98,.25,0x3a4a5a);b(.8,.1,.56,0,1.3,0,L);
+  b(.86,.78,.78,0,1.74,0,S);b(.62,.5,.06,0,1.74,.4,0x1b2a3a);b(.46,.38,.04,0,1.72,.43,P);
+  [-1,1].forEach(s=>{b(.08,.08,.02,s*.1,1.76,.455,0x1b1220);b(.12,.2,.2,s*.48,1.74,0,L)});b(.16,.04,.02,0,1.64,.455,0x1b1220);
+  b(.05,.3,.05,.22,2.25,-.1,0x1b1220);b(.12,.12,.12,.22,2.44,-.1,0xff5a4d);
+  a.scale.setScalar(.42);
+  C.sc.background=new THREE.Color(0x7fb3d8);
+  return{mars,astro:a,extras:[U.luzes(1,.55)]}}};
+</script>
+
+<!-- ===================== MEDIÇÃO ===================== -->
+<script id="medicao">
+function infoAparelho(){const gl=C.rd.getContext(),ext=gl.getExtension("WEBGL_debug_renderer_info");
+  const gpu=ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);const soft=/swiftshader|llvmpipe|software|basic render/i.test(gpu);
+  const ua=navigator.userAgentData;return{nav:(ua&&ua.brands?ua.brands.filter(b=>!/Not/.test(b.brand)).map(b=>b.brand+" "+b.version).join(", "):"")||navigator.userAgent,gpu,soft,plat:(ua&&ua.platform)||navigator.platform}}
+// tempo por quadro = desenhar + esperar a GPU terminar (leitura de 1 pixel força a sincronização)
+async function mede(k,w,h){troca(k);setRes(w,h);const gl=C.rd.getContext(),px=new Uint8Array(4),t=[];C.medindo=true;
+  const passo=i=>{const a=performance.now();quadro(i/60,.3+i*.02);gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);return performance.now()-a};
+  for(let i=0;i<40;i++){passo(i);if(i%10===0)await new Promise(r=>setTimeout(r))}// aquecimento
+  for(let i=0;i<180;i++){t.push(passo(i));if(i%15===0)await new Promise(r=>setTimeout(r))}
+  C.medindo=false;t.sort((a,b)=>a-b);return t[Math.floor(t.length/2)]}
+const bytes=s=>new TextEncoder().encode(s).length;
+async function medeTudo(){const bt=document.getElementById("medir");bt.disabled=true;bt.textContent="Medindo…";const linhas=[],atual=C.estilo;
+  for(const k of Object.keys(ESTILOS)){bt.textContent="Medindo "+ESTILOS[k].nome+"…";linhas.push({k,w:960,h:540,ms:await mede(k,960,540)})}
+  for(const k of ["pixel1","pixel2"]){const r=ESTILOS[k].res;linhas.push({k,w:r.w,h:r.h,ms:await mede(k,r.w,r.h),prop:true})}
+  const ap=infoAparelho();
+  const tab=`<p><b>Navegador:</b> ${ap.nav} · <b>Plataforma:</b> ${ap.plat} · <b>Renderizador WebGL:</b> ${ap.gpu} · <b>${ap.soft?"renderização por software":"GPU"}</b></p>
+  <table><thead><tr><th>Estilo</th><th>Resolução interna</th><th>Mediana ms/quadro</th><th>Bytes do código do estilo</th><th>Arte exclusiva</th></tr></thead><tbody>${linhas.map(l=>`<tr><td>${ESTILOS[l.k].nome}${l.prop?" (resolução proposta)":""}</td><td>${l.w}×${l.h}</td><td class="n">${l.ms.toFixed(2)}</td><td class="n">${bytes(document.getElementById("estilo-"+l.k).textContent)}</td><td>nenhuma (gerada no código)</td></tr>`).join("")}</tbody></table>
+  <p class="sub">Aquecimento de 40 quadros e 180 medidos com a mesma órbita de câmera. Arte comum a todos: tex/mars.jpg (${"753 197"} bytes), usada por Pixel, Desenhado, Realista e Voxel; tex/mars_n.jpg (159 338 bytes) só no Realista.</p>`;
+  document.getElementById("resultado").innerHTML=tab;window.RESULTADO={linhas,ap};troca(atual);bt.disabled=false;bt.textContent="Medir desempenho (6 estilos + pixel na resolução proposta)"}
+inicia().catch(e=>{document.getElementById("info").textContent="Erro: "+e.message;console.error(e)});
+</script>
+</body>
+</html>

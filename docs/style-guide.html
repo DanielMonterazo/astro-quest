@@ -1,0 +1,205 @@
+<title>MARS-01 Style Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Orbitron:wght@700;800;900&family=Exo+2:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma coluna de referência sobre o chão de Marte, cada seção é uma "janela" do jogo.
+   Página só escura, de propósito: é o visual do jogo. Tokens = os mesmos do index.html (#jogo-gale). */
+:root{color-scheme:dark;
+  --marte:#2a1209;--marte-2:#b0482b;
+  --ciano:#8ff0ff;--ciano2:#3fd0f0;--ok:#6fdc5a;--al:#ffb21e;--cr:#ff5a4a;--dica:#ffd36b;
+  --texto:#eef6fa;--fraco:#a9bac5;--linha:rgba(143,240,255,.22);
+  --painel-a:rgba(18,28,40,.92);--painel-b:rgba(8,14,22,.95);
+  --prim-a:#22b8de;--prim-b:#0b88ad;--lar-a:#e0731a;--lar-b:#b44f00;
+  --f-ui:"Exo 2",system-ui,sans-serif;--f-cond:"Barlow Condensed","Arial Narrow",sans-serif;--f-tela:"Orbitron","Exo 2",sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace}
+*{box-sizing:border-box}
+body{background:radial-gradient(1200px 700px at 70% -10%,#5a2412 0%,var(--marte) 55%,#170904 100%) fixed var(--marte);color:var(--texto);font:500 16px/1.5 var(--f-ui);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:28px}
+header.hero{display:grid;gap:10px;padding-block:8px 12px}
+.ey{font:700 13px/1 var(--f-cond);letter-spacing:.18em;text-transform:uppercase;color:#9fe9f7}
+h1{margin:0;font:900 clamp(34px,6vw,64px)/1 var(--f-tela);letter-spacing:.02em;text-wrap:balance}
+h1 span{color:var(--ciano)}
+.lead{margin:0;max-width:62ch;color:var(--fraco);font-size:17px}
+section.jan{background:linear-gradient(180deg,var(--painel-a),var(--painel-b));border:1px solid rgba(143,240,255,.28);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 30px 80px -20px rgba(0,0,0,.75);overflow:hidden}
+section.jan>header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:18px 22px;border-bottom:1px solid rgba(143,240,255,.1)}
+section.jan h2{margin:0;font:700 22px/1.2 var(--f-ui);letter-spacing:-.01em}
+.corpo{padding:22px;display:grid;gap:18px;min-width:0}
+p.nota{margin:0;color:var(--fraco);max-width:68ch}
+code,.mono{font:500 13px/1.4 var(--f-mono)}
+code{background:rgba(143,240,255,.08);padding:1px 6px;border-radius:6px;color:#cdf6ff}
+
+/* cores */
+.cores{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.cor{border:1px solid var(--linha);border-radius:14px;overflow:hidden;background:rgba(0,0,0,.2)}
+.cor i{display:block;height:72px}
+.cor div{padding:10px 12px;display:grid;gap:2px}
+.cor b{font-size:14px}.cor small{color:var(--fraco);font-size:12px;line-height:1.35}
+.grupo{display:grid;gap:10px}
+.grupo h3{margin:0;font:700 12px/1 var(--f-cond);letter-spacing:.16em;text-transform:uppercase;color:var(--fraco)}
+
+/* tipografia */
+.tipos{display:grid;gap:14px}
+.tipo{display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:center;padding:14px 0;border-top:1px solid rgba(143,240,255,.08)}
+.tipo:first-child{border-top:0}
+.tipo .meta{display:grid;gap:2px}.tipo .meta b{font-size:15px}.tipo .meta small{color:var(--fraco);font-size:12px}
+.tipo .am{min-width:0;overflow-wrap:anywhere}
+.escala{display:grid;gap:8px}
+.escala div{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:baseline}
+.escala span.mono{color:var(--fraco)}
+
+/* componentes reais do jogo */
+.demo{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.caixa{background:linear-gradient(180deg,rgba(18,28,40,.82),rgba(8,14,22,.86));border:1px solid var(--linha);border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 10px 30px -8px rgba(0,0,0,.55);padding:12px 14px;display:grid;gap:7px;width:min(290px,100%)}
+.caixa h4{margin:0;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9fe9f7;display:flex;justify-content:space-between}
+.r{display:grid;grid-template-columns:86px 1fr 34px;gap:8px;align-items:center;font-size:13px}
+.r .b{height:6px;border-radius:99px;background:rgba(255,255,255,.08)}.r .b i{display:block;height:100%;border-radius:99px;box-shadow:0 0 8px currentColor}
+.r em{font-style:normal;text-align:right;font-size:12px;color:#c8d6de;font-variant-numeric:tabular-nums}
+.bt{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;font:700 14px var(--f-ui);color:var(--texto);cursor:pointer;border-radius:11px;border:1px solid var(--linha);background:linear-gradient(180deg,rgba(24,36,50,.85),rgba(10,17,26,.88));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 2px 8px rgba(0,0,0,.3);transition:transform .16s cubic-bezier(.2,.8,.2,1),border-color .16s}
+.bt:hover{transform:translateY(-1px);border-color:rgba(143,240,255,.6)}
+.bt:active{transform:scale(.97)}
+.bt:focus-visible,.op:focus-visible{outline:2px solid var(--dica);outline-offset:2px}
+.bt.prim{background:linear-gradient(180deg,var(--prim-a),var(--prim-b));border-color:#5fd6f2;color:#fff}
+.bt.lar{background:linear-gradient(180deg,var(--lar-a),var(--lar-b));border-color:#f59a45;color:#fff}
+.bt.on{background:linear-gradient(180deg,#3480c4,#235f99);border-color:var(--ciano);color:#fff}
+.bt .n{background:var(--cr);color:#fff;border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;font-size:12px;padding:0 5px}
+.ops{display:grid;gap:10px;width:100%;max-width:560px}
+.op{display:grid;gap:3px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(143,240,255,.18);background:rgba(255,255,255,.035);color:var(--texto);font:600 15px var(--f-ui);cursor:pointer}
+.op small{color:var(--fraco);font-weight:500;font-size:13px}
+.op.certa{border-color:#4fd28a;background:linear-gradient(180deg,rgba(79,210,138,.16),rgba(79,210,138,.06));box-shadow:0 0 0 3px rgba(79,210,138,.12)}
+.op.errada{border-color:#ff6a5a;background:linear-gradient(180deg,rgba(255,106,90,.16),rgba(255,106,90,.05));box-shadow:0 0 0 3px rgba(255,106,90,.1)}
+.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:2px 9px}
+.tag.fato{background:#1f5c3a;color:#b6ffcf}.tag.hip{background:#20406a;color:#bcd9ff}.tag.sim{background:#6a4a10;color:#ffe2a8}
+.tt{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.03em;padding:2px 9px;border-radius:999px}
+.tt.rap{background:rgba(255,211,107,.18);color:var(--dica)}.tt.eta{background:rgba(143,240,255,.16);color:var(--ciano)}.tt.jog{background:rgba(190,150,255,.18);color:#d4b8ff}
+.toast{display:flex;gap:12px;align-items:center;width:min(520px,100%);padding:11px 14px;border:1px solid rgba(143,240,255,.55);border-radius:14px;background:linear-gradient(180deg,rgba(18,30,42,.94),rgba(9,16,24,.95));box-shadow:0 12px 34px rgba(0,0,0,.5),0 0 24px rgba(143,240,255,.18);font-size:14px}
+.balao{position:relative;max-width:300px;padding:12px 14px;border-radius:14px;background:#f7fbfd;color:#14202a;font-size:15px;line-height:1.4;border:2px solid var(--ciano)}
+.rosto{width:60px;height:60px;border-radius:50%;border:3px solid var(--ciano);background:rgba(8,14,22,.85);box-shadow:0 0 0 4px rgba(143,240,255,.12),0 6px 18px rgba(0,0,0,.55);display:grid;place-items:center;flex:none}
+.rosto svg{width:46px;height:46px}
+.res{padding:10px 12px;border-radius:12px;border:1px solid;font-size:14px}
+.res.bom{background:rgba(111,220,90,.08);border-color:rgba(111,220,90,.45)}.res.ruim{background:rgba(255,90,74,.08);border-color:rgba(255,90,74,.45)}
+
+/* forma e movimento */
+.tab{width:100%;border-collapse:collapse;font-size:14px}
+.tab th,.tab td{text-align:left;padding:9px 10px;border-bottom:1px solid rgba(143,240,255,.1);vertical-align:top}
+.tab th{font:700 12px var(--f-cond);letter-spacing:.14em;text-transform:uppercase;color:var(--fraco)}
+.tab td:first-child{white-space:nowrap}
+.rolar{overflow-x:auto}
+.raios{display:flex;flex-wrap:wrap;gap:14px}
+.raios div{width:84px;height:62px;border:1px solid var(--linha);background:rgba(143,240,255,.06);display:grid;place-items:center;font:500 12px var(--f-mono);color:var(--fraco)}
+ul.regras{margin:0;padding-left:20px;display:grid;gap:8px;max-width:72ch}
+ul.regras b{color:var(--ciano)}
+footer{color:var(--fraco);font-size:13px;text-align:center}
+@media (max-width:640px){.tipo{grid-template-columns:1fr;gap:6px}.escala div{grid-template-columns:84px 1fr}section.jan>header,.corpo{padding:16px}}
+@media (prefers-reduced-motion:reduce){.bt{transition:none}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <span class="ey">NASA Space Apps 2026 · guia visual</span>
+  <h1>Mapa dos Abandonados <span>MARS-01</span></h1>
+  <p class="lead">Cores, tipografia e componentes da interface 2D do jogo: HUD, janelas, botões, quizzes e avisos. Tudo aqui é o que já está no código (<code>index.html</code>, bloco <code>#jogo-gale</code>), para quem for criar uma tela nova ou um material de divulgação.</p>
+</header>
+
+<section class="jan">
+  <header><span class="ey">01 · Base</span><h2>Princípios</h2></header>
+  <div class="corpo">
+    <ul class="regras">
+      <li><b>Vidro escuro sobre Marte.</b> Os painéis flutuam sobre a cena 3D: fundo azul-noite translúcido, borda ciano fina e um filete de luz no topo. A cor quente vem do planeta, não da interface.</li>
+      <li><b>Ciano é a voz da base.</b> Títulos de painel, ícones e foco usam ciano. Verde, amarelo e vermelho são reservados para estado (bom, atenção, perigo).</li>
+      <li><b>Feito para criança ler.</b> Corpo de texto a partir de 15 px, alvos de toque com 40 px ou mais, uma ação principal por janela.</li>
+      <li><b>Ciência honesta à vista.</b> Todo dado real leva a etiqueta <span class="tag fato">fato</span> e todo elemento inventado leva <span class="tag sim">simulação</span>. O rover R-1 é fictício; as fotos e medições são do Curiosity.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="jan">
+  <header><span class="ey">02 · Cor</span><h2>Paleta</h2></header>
+  <div class="corpo">
+    <div class="grupo"><h3>Marca e superfícies</h3>
+    <div class="cores">
+      <div class="cor"><i style="background:#8ff0ff"></i><div><b>Ciano</b><small class="mono">#8FF0FF · --jg-ciano</small><small>Títulos de painel, ícones, bordas ativas</small></div></div>
+      <div class="cor"><i style="background:#3fd0f0"></i><div><b>Ciano forte</b><small class="mono">#3FD0F0 · --jg-ciano2</small><small>Realces e anéis</small></div></div>
+      <div class="cor"><i style="background:linear-gradient(180deg,#22b8de,#0b88ad)"></i><div><b>Ação principal</b><small class="mono">#22B8DE → #0B88AD</small><small>Botão "Confirmar", "Próxima"</small></div></div>
+      <div class="cor"><i style="background:linear-gradient(180deg,#e0731a,#b44f00)"></i><div><b>Laranja Marte</b><small class="mono">#E0731A → #B44F00</small><small>Ação de missão, botas e gola do astronauta</small></div></div>
+      <div class="cor"><i style="background:linear-gradient(180deg,#121c28,#080e16)"></i><div><b>Painel</b><small class="mono">rgba(10,17,26,.78)</small><small>Fundo de caixas e janelas, com desfoque</small></div></div>
+      <div class="cor"><i style="background:#2a1209"></i><div><b>Chão de Marte</b><small class="mono">#2A1209</small><small>Fundo do jogo antes da cena carregar</small></div></div>
+    </div></div>
+    <div class="grupo"><h3>Texto</h3>
+    <div class="cores">
+      <div class="cor"><i style="background:#eef6fa"></i><div><b>Texto</b><small class="mono">#EEF6FA · --jg-texto</small><small>Corpo e títulos</small></div></div>
+      <div class="cor"><i style="background:#a9bac5"></i><div><b>Texto fraco</b><small class="mono">#A9BAC5 · --jg-fraco</small><small>Legendas, créditos, dicas</small></div></div>
+      <div class="cor"><i style="background:#ffd36b"></i><div><b>Dica</b><small class="mono">#FFD36B</small><small>Tutorial, foco do teclado, valores</small></div></div>
+    </div></div>
+    <div class="grupo"><h3>Estado</h3>
+    <div class="cores">
+      <div class="cor"><i style="background:#6fdc5a"></i><div><b>Bom</b><small class="mono">#6FDC5A · --jg-ok</small><small>Acerto, recurso cheio</small></div></div>
+      <div class="cor"><i style="background:#ffb21e"></i><div><b>Atenção</b><small class="mono">#FFB21E · --jg-al</small><small>Recurso baixo, selo de simulação</small></div></div>
+      <div class="cor"><i style="background:#ff5a4a"></i><div><b>Perigo</b><small class="mono">#FF5A4A · --jg-cr</small><small>Erro, emergência, contador</small></div></div>
+    </div></div>
+    <div class="grupo"><h3>Etiquetas de ciência e tipos de tarefa</h3>
+    <div class="demo"><span class="tag fato">Fato</span><span class="tag hip">Hipótese</span><span class="tag sim">Simulação</span>
+      <span class="tt rap">⚡ Rápida</span><span class="tt eta">🧩 Em etapas</span><span class="tt jog">🎮 Desafio</span></div></div>
+  </div>
+</section>
+
+<section class="jan">
+  <header><span class="ey">03 · Tipo</span><h2>Tipografia</h2></header>
+  <div class="corpo">
+    <div class="tipos">
+      <div class="tipo"><div class="meta"><b>Exo 2</b><small>Interface inteira · 500 a 800</small></div><div class="am" style="font:700 26px/1.2 var(--f-ui)">Onde montar a base?</div></div>
+      <div class="tipo"><div class="meta"><b>Barlow Condensed</b><small>Abertura, eyebrows, rótulos em caixa alta · 600 a 700</small></div><div class="am" style="font:700 22px/1.1 var(--f-cond);letter-spacing:.16em;text-transform:uppercase;color:#9fe9f7">Mapa real de Marte · NASA Mars Trek</div></div>
+      <div class="tipo"><div class="meta"><b>Orbitron</b><small>Só telas de destaque (pausa) · 800 a 900</small></div><div class="am" style="font:900 30px/1 var(--f-tela);letter-spacing:.04em">PAUSADO</div></div>
+      <div class="tipo"><div class="meta"><b>JetBrains Mono</b><small>Dados técnicos, código · 400 a 500</small></div><div class="am" style="font:500 15px/1.4 var(--f-mono);color:#cdf6ff">CME 742 km/s · RAD 18,1 µGy/h · Sol 1312</div></div>
+    </div>
+    <div class="grupo"><h3>Escala usada nas janelas</h3>
+    <div class="escala">
+      <div><span class="mono">20 / 700</span><span style="font:700 20px var(--f-ui)">Título da janela</span></div>
+      <div><span class="mono">15–17 / 600</span><span style="font:600 16px var(--f-ui)">Pergunta e opções de quiz</span></div>
+      <div><span class="mono">14 / 500</span><span style="font:500 14px var(--f-ui)">Texto de painel, toasts, botões</span></div>
+      <div><span class="mono">12 / 500</span><span style="font:500 12px var(--f-ui);color:var(--fraco)">Legendas e créditos de imagem</span></div>
+      <div><span class="mono">11 / 700 · .16em</span><span style="font:700 11px var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:#9fe9f7">Eyebrow de painel</span></div>
+    </div></div>
+  </div>
+</section>
+
+<section class="jan">
+  <header><span class="ey">04 · Peças</span><h2>Componentes</h2></header>
+  <div class="corpo">
+    <div class="grupo"><h3>Caixa do HUD</h3>
+    <div class="caixa"><h4><span>Base · simulação</span><span>Sol 1</span></h4>
+      <div class="r"><span>⚡ Energia</span><span class="b" style="color:#6fdc5a"><i style="width:80%;background:#6fdc5a"></i></span><em>80</em></div>
+      <div class="r"><span>🫁 Vida</span><span class="b" style="color:#ffb21e"><i style="width:42%;background:#ffb21e"></i></span><em>42</em></div>
+      <div class="r"><span>❤️ Saúde</span><span class="b" style="color:#ff5a4a"><i style="width:18%;background:#ff5a4a"></i></span><em>18</em></div>
+    </div></div>
+    <div class="grupo"><h3>Botões</h3>
+    <div class="demo"><button class="bt" type="button" id="b1">Voltar</button><button class="bt prim" type="button" id="b2">Confirmar</button><button class="bt lar" type="button" id="b3">Montar peça</button><button class="bt on" type="button" id="b4">Selecionado</button><button class="bt" type="button" id="b5">📡 Comunicações <span class="n">2</span></button></div>
+    <p class="nota">Sobem 1 px no hover e afundam ao clicar. Foco do teclado com contorno amarelo. Sem giro nem deslocamento em setas e botões com texto.</p></div>
+    <div class="grupo"><h3>Opções de quiz</h3>
+    <div class="ops"><button class="op" type="button" id="o1">Cerca de 150 km<small>Opção neutra</small></button><button class="op certa" type="button" id="o2">Pedras pontudas no caminho</button><button class="op errada" type="button" id="o3">Um meteorito</button></div></div>
+    <div class="grupo"><h3>Resposta</h3>
+    <div class="ops"><div class="res bom"><b>Isso!</b> A água corre para baixo e se junta no fundo da cratera.</div><div class="res ruim"><b>Quase!</b> A cor azul só mostra altitude.</div></div></div>
+    <div class="grupo"><h3>Toast e fala do astronauta</h3>
+    <div class="toast">📻 <span><b>Foto de hoje.</b> O Curiosity mandou uma imagem nova da Mastcam.</span></div>
+    <div class="demo"><span class="rosto"><svg viewBox="140 160 520 460" aria-hidden="true"><circle cx="400" cy="384" r="168" fill="#e6f5fc"/><path d="M262 330 Q300 232 400 228 Q505 232 540 330 Q470 278 400 280 Q330 278 262 330 Z" fill="#5a3524"/><circle cx="400" cy="392" r="142" fill="#e9a77a"/><path d="M272 352 Q300 250 400 246 Q500 250 528 352 Q470 300 400 304 Q330 300 272 352 Z" fill="#5a3524"/><circle cx="341" cy="372" r="26" fill="#1b1220"/><circle cx="459" cy="372" r="26" fill="#1b1220"/><path d="M366 418 Q400 456 434 418" fill="none" stroke="#1b1220" stroke-width="11" stroke-linecap="round"/></svg></span>
+      <div class="balao">Faltam 2 perguntas na revisão para alcançar nossos objetivos!</div></div></div>
+  </div>
+</section>
+
+<section class="jan">
+  <header><span class="ey">05 · Forma</span><h2>Raios, sombras e movimento</h2></header>
+  <div class="corpo">
+    <div class="raios"><div style="border-radius:6px">6 · tag</div><div style="border-radius:11px">11 · botão</div><div style="border-radius:14px">14 · caixa</div><div style="border-radius:20px">20 · janela</div><div style="border-radius:999px">999 · pílula</div></div>
+    <div class="rolar"><table class="tab">
+      <tr><th>Token</th><th>Valor</th><th>Onde</th></tr>
+      <tr><td><code>--jg-brilho</code></td><td class="mono">inset 0 1px 0 rgba(255,255,255,.07)</td><td>Filete de luz no topo de toda caixa</td></tr>
+      <tr><td><code>--jg-sombra</code></td><td class="mono">0 10px 30px -8px rgba(0,0,0,.55)</td><td>Caixas do HUD</td></tr>
+      <tr><td><code>--jg-ease</code></td><td class="mono">cubic-bezier(.2,.8,.2,1)</td><td>Hover, entrada de janelas e toasts</td></tr>
+      <tr><td>Entrada de janela</td><td class="mono">.32s · sobe 10px + escala .98</td><td>Fundo escurece e desfoca em .22s</td></tr>
+      <tr><td>Glitch</td><td class="mono">jgGl, na tela toda</td><td>Só quando chega comunicação da Terra</td></tr>
+    </table></div>
+    <p class="nota">Com "reduzir movimento" ativo no sistema, janelas e botões ficam sem animação. Desfoque de fundo nunca vai em caixas que abrem pop-ups por dentro, porque prende o pop-up à largura da caixa.</p>
+  </div>
+</section>
+
+<footer>Imagens e dados da NASA citados no jogo: NASA/JPL-Caltech/MSSS e NASA Mars Trek. Base, robô R-1 e mensagens são simulação.</footer>
+</div>
